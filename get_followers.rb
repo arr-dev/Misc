@@ -1,11 +1,13 @@
 #!/usr/bin/env ruby
 
+puts RUBY_VERSION
+puts RUBY_RELEASE_DATE
 require 'thread'
 require 'rubygems'
 require 'active_support'
 
-TWCMD = '/home/nenadpet/.rvm/gems/ruby-1.8.7-p352@skinflips/bin/twurl'
-FOLLOWERS_URL = '/1/followers/ids.json?screen_name=soulrblkg'
+TWCMD = '/usr/bin/env twurl'
+FOLLOWERS_URL = '/1/followers/ids.json'
 USER_LOOKUP_URL = '/1/users/lookup.json?user_id='
 
 f_response = %x[#{TWCMD} #{FOLLOWERS_URL}]
@@ -16,7 +18,12 @@ d_response = %x[#{TWCMD} #{USER_LOOKUP_URL}#{followers.sort.join(',')}]
 
 data = ActiveSupport::JSON.decode(d_response)
 
+
+fp = File.open(Time.new.strftime("%Y%m%d").to_s + '_twflw.txt', 'w')
+
 data.sort{ |x, y| x["id"] <=> y["id"] }.each do |user|
-  puts "#{user['id']} | #{user['screen_name']} | #{user['name']}"
+  fp.puts "#{user['id']} | #{user['screen_name']} | #{user['name']}\n"
 end
+
+fp.close
 
