@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env ruby 
 
 puts RUBY_VERSION
 puts RUBY_RELEASE_DATE
