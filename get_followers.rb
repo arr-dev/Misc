@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby 
 
-puts RUBY_VERSION
-puts RUBY_RELEASE_DATE
 require 'thread'
 require 'rubygems'
 require 'active_support'
