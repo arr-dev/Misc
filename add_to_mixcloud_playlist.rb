@@ -21,7 +21,7 @@ class AddToMixcloudPlaylist
         http.request(request)
       end
 
-      puts "response: #{response.inspect}"
+      puts "response: #{response.inspect}" if debug? || !response.is_a?(Net::HTTPOK)
     end
   end
 
@@ -46,6 +46,9 @@ class AddToMixcloudPlaylist
     "s=#{Config.sid}; csrftoken=#{Config.csrftoken}"
   end
 
+  def debug?
+    ENV.has_key?('DEBUG')
+  end
 
   def build_request(path)
     url = "/playlists#{path}add-to-collection/"
@@ -61,14 +64,14 @@ class AddToMixcloudPlaylist
 
     req.body = "action=add&playlist_slug=#{Config.playlist_name}"
 
-    puts "req: #{req.inspect} #{req.to_hash}"
+    puts "req: #{req.inspect} #{req.to_hash}" if debug?
     req
   end
 
   def parse_path(link)
     uri = URI(link)
     res = Net::HTTP.get_response(uri)
-    puts "res: #{res.inspect}"
+    puts "res: #{res.inspect}" if debug? || !res.is_a?(Net::HTTPFound)
 
     path = case res
            when Net::HTTPFound
@@ -78,7 +81,7 @@ class AddToMixcloudPlaylist
            else
              raise "result is #{res.inspect}"
            end
-    puts "parsed path: #{path}"
+    puts "parsed path: #{path}" if debug?
     path
   end
 end
