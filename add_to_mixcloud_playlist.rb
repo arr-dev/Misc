@@ -1,11 +1,11 @@
-require 'net/http'
+require 'net/https'
 require 'yaml'
 require 'ostruct'
 
 class AddToMixcloudPlaylist
 
   Config = OpenStruct.new(YAML.load_file('mixcloud.yml'))
-  Host = URI("http://www.mixcloud.com")
+  Host = URI("https://www.mixcloud.com")
 
   def call
     return if links.empty?
@@ -17,9 +17,7 @@ class AddToMixcloudPlaylist
       path = parse_path(link)
       request = build_request(path)
 
-      response = Net::HTTP.new(Host.host).start do |http|
-        http.request(request)
-      end
+      response = fire!(request)
 
       puts "response: #{response.inspect}" if debug? || !response.is_a?(Net::HTTPOK)
     end
@@ -31,11 +29,15 @@ class AddToMixcloudPlaylist
     req = Net::HTTP::Get.new('/')
     req.add_field('Cookie', cookies)
 
-    res = Net::HTTP.new(Host.host).start do |http|
-      http.request(req)
-    end
+    res = fire!(req)
 
     raise 'Invalid session id!' unless res.body.include?('_loggedIn": true')
+  end
+
+  def fire!(request)
+     Net::HTTP.start(Host.host, Host.port, use_ssl: true, verify_mode: OpenSSL::SSL::VERIFY_NONE) do |h|
+      h.request(request)
+    end
   end
 
   def links
@@ -70,7 +72,8 @@ class AddToMixcloudPlaylist
 
   def parse_path(link)
     uri = URI(link)
-    res = Net::HTTP.get_response(uri)
+    req = Net::HTTP::Get.new(uri)
+    res = fire!(req)
     puts "res: #{res.inspect}" if debug? || !res.is_a?(Net::HTTPFound)
 
     path = case res
